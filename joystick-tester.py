@@ -1,13 +1,14 @@
 import os
 import sys
 import time
-import select
+import select #not important
 import pygame
+import serial
 
 # this is the number of dots that will be used to display the output of an axis
 dots = 8
 
-# this is for pygame
+# this is for pygameeeeee
 screen = None
 
 # write to stderr.  pygame clutters up stdout because of a bug
@@ -32,13 +33,16 @@ def printJoystickInfo(index, js):
 def readJoystick(js):
     pygame.event.pump()
 
+    output = []
+
     # cycle through all joystick axes
     for i, axis in enumerate([js.get_axis(i) for i in range(js.get_numaxes())]):
-        norm = (axis + 1.0) / 2.0 # normalize to the range 0-1
+        norm = (axis + 1.0) * (127/ 2.0) # normalize to the range 0-127
+        output.append(norm)
 
         # print the axis number
         wrerr(str(i) + ": ")
-        # print an exclamation point if the value is above this dot, otherwise a period
+        #  print an exclamation point if the value is above this dot, otherwise a period
         for d in range(dots):
             if d < norm * dots:
                 wrerr("!")
@@ -47,16 +51,10 @@ def readJoystick(js):
 
         wrerr("\t")
 
-    # print a -- if the button is not pressed, print the button number if it is pressed
-    for i, button in enumerate([js.get_button(i) for i in range(js.get_numbuttons())]):
-        if button:
-            wrerr(str(i))
-        else:
-            wrerr("-" * len(str(i)))
         
     prerr("")
-
-
+    pygame.event.clear()
+    return output
 
 
 # normal script entry
@@ -66,6 +64,7 @@ if __name__ == "__main__":
     global screen
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
+    ser = serial.Serial(0)
     
     # print error message if no joysticks were connected
     if pygame.joystick.get_count() < 1:
@@ -91,11 +90,20 @@ if __name__ == "__main__":
         
     # loop and read input
     while True:
-        readJoystick(js)
+        values = readJoystick(js)
+        letters = ["w", "s", "h", "y"]
+        myArduinoCommand = "::"
 
+        for i, v in enumerate(values):
+            myArduinoCommand = myArduinoCommand + letters[i]
+            myArduinoCommand = myArduinoCommand + chr(int(v))
+
+         
+        ser.write(myArduinoCommand)
+        prerr(myArduinoCommand)
         # wait for a keypress, and exit if we get one
-        i, o, e = select.select( [sys.stdin], [], [], 0.01 )
-        if i:
-            pygame.quit()
-            break
+        #3i, o, e = select.select( [sys.stdin], [], [], 0.01 )
+        #if i:
+        #    pygame.quit()
+        #    break
         
