@@ -31,7 +31,7 @@ def printJoystickInfo(index, js):
 
 # read joystick info and print it out on the screen
 def readJoystick(js):
-    pygame.event.pump()
+    pygame.event.pump()  # get joystick events from pygame
 
     output = []
 
@@ -40,8 +40,8 @@ def readJoystick(js):
         norm = (axis + 1.0) * (127/ 2.0) # normalize to the range 0-127
         output.append(norm)
 
-        # print the axis number
-        wrerr(str(i) + ": ")
+        # print the axis number for debugging
+        wrerr(str(i) + ": ") 
         #  print an exclamation point if the value is above this dot, otherwise a period
         for d in range(dots):
             if d < norm * dots:
@@ -53,7 +53,7 @@ def readJoystick(js):
 
         
     prerr("")
-    pygame.event.clear()
+    #pygame.event.clear()
     return output
 
 
@@ -80,7 +80,8 @@ if __name__ == "__main__":
     # print an error message if no joystick was specified
     if len(sys.argv) < 2:
         pygame.quit()
-        prerr("Monitor a specific joystick with the command 'python %s <joystick number> 1>/dev/null'" % sys.argv[0])
+        prerr("You need to choose a specific joystick with the command 'python %s <joystick number> 1>out.log'" % sys.argv[0])
+        prerr("")
         exit(1)
 
     # initialize the joystick that was specified on the command line
@@ -88,22 +89,29 @@ if __name__ == "__main__":
     if not js.get_init():
         js.init()
         
+    n = 0 
     # loop and read input
     while True:
-        values = readJoystick(js)
-        letters = ["w", "s", "h", "y"]
-        myArduinoCommand = "::"
+        values = readJoystick(js) # get array of axis values
+        letters = ["w", "s", "h", "y"] # labels we send to serial port that the arduino expect
+        # The arduinocamand will call for the label (letters) and the value of the speed(0 - 127)
+        # the speed is coded as a char
+        # example of arduinocommand: ::wJsOhUyP
 
-        for i, v in enumerate(values):
-            myArduinoCommand = myArduinoCommand + letters[i]
-            myArduinoCommand = myArduinoCommand + chr(int(v))
+        # building the arduino command
+        myArduinoCommand = "::" # resetting the state of the ardunio
 
-         
-        ser.write(myArduinoCommand)
-        prerr(myArduinoCommand)
-        # wait for a keypress, and exit if we get one
-        #3i, o, e = select.select( [sys.stdin], [], [], 0.01 )
-        #if i:
-        #    pygame.quit()
-        #    break
+        for i, v in enumerate(values): # going through the values index and its axis value
+            myArduinoCommand = myArduinoCommand + letters[i] # setting up the arduino state 
+            myArduinoCommand = myArduinoCommand + chr(int(v)) # setting up the arduino spead
+            # chr(int(v)) is going to convert v as integer with the equivalent value of it as a character
+
+        # arduino command is now complete
+
+        n = n + 1
+
+        if n % 50 == 0: 
+            ser.write(myArduinoCommand) # send the command
+            prerr(myArduinoCommand + " " + str(ser.outWaiting())) 
+
         
