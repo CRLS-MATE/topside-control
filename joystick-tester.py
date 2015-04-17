@@ -108,10 +108,7 @@ if __name__ == "__main__":
 
         # arduino command is now complete
 
-        n = n + 1
-
-        if n % 50 == 0: 
-            ser.write(myArduinoCommand) # send the command
-            prerr(myArduinoCommand + " " + str(ser.outWaiting())) 
+        ser.write(myArduinoCommand) # send the command
+        prerr(myArduinoCommand + " " + str(ser.outWaiting())) 
 
         
