@@ -1,3 +1,5 @@
+#CRLS UNDERWATER ROBOTICS TEAM 2015
+
 import os
 import sys
 import time
@@ -12,7 +14,7 @@ dots = 8
 screen = None
 
 # write to stderr.  pygame clutters up stdout because of a bug
-def wrerr(msg):
+def wrerr(msg): 
     sys.stderr.write(msg)
 
 # print to stderr to avoid SDL messages
@@ -84,8 +86,10 @@ if __name__ == "__main__":
         prerr("")
         exit(1)
 
+    joystickNum = int(sys.argv[1])
+
     # initialize the joystick that was specified on the command line
-    js = pygame.joystick.Joystick(int(sys.argv[1]))
+    js = pygame.joystick.Joystick(joystickNum)
     if not js.get_init():
         js.init()
         
