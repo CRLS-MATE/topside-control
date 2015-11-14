@@ -53,7 +53,7 @@ def readJoystick(js):
             wrerr(str(i))
         else:
             wrerr("-" * len(str(i)))
-        
+
     prerr("")
 
 
@@ -66,12 +66,12 @@ if __name__ == "__main__":
     global screen
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
-    
+
     # print error message if no joysticks were connected
     if pygame.joystick.get_count() < 1:
         prerr("No joysticks were found :(")
         exit(1)
-        
+
     # print info about each joystick that was found
     for i, js in enumerate([pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]):
         js.init()
@@ -88,14 +88,14 @@ if __name__ == "__main__":
     js = pygame.joystick.Joystick(int(sys.argv[1]))
     if not js.get_init():
         js.init()
-        
+
     # loop and read input
     while True:
         readJoystick(js)
 
-        # wait for a keypress, and exit if we get one
-        i, o, e = select.select( [sys.stdin], [], [], 0.01 )
-        if i:
-            pygame.quit()
-            break
-        
+        if "darwin" == sys.platform
+            # wait for a keypress, and exit if we get one
+            i, o, e = select.select( [sys.stdin], [], [], 0.01 )
+            if i:
+                pygame.quit()
+                break
