@@ -1,17 +1,20 @@
+#CRLS UNDERWATER ROBOTICS TEAM 2015
+
 import os
 import sys
 import time
-import select
+import select #not important
 import pygame
+import serial
 
 # this is the number of dots that will be used to display the output of an axis
 dots = 8
 
-# this is for pygame
+# this is for pygameeeeee
 screen = None
 
 # write to stderr.  pygame clutters up stdout because of a bug
-def wrerr(msg):
+def wrerr(msg): 
     sys.stderr.write(msg)
 
 # print to stderr to avoid SDL messages
@@ -30,15 +33,18 @@ def printJoystickInfo(index, js):
 
 # read joystick info and print it out on the screen
 def readJoystick(js):
-    pygame.event.pump()
+    pygame.event.pump()  # get joystick events from pygame
+
+    output = []
 
     # cycle through all joystick axes
     for i, axis in enumerate([js.get_axis(i) for i in range(js.get_numaxes())]):
-        norm = (axis + 1.0) / 2.0 # normalize to the range 0-1
+        norm = (axis + 1.0) * (127/ 2.0) # normalize to the range 0-127
+        output.append(norm)
 
-        # print the axis number
-        wrerr(str(i) + ": ")
-        # print an exclamation point if the value is above this dot, otherwise a period
+        # print the axis number for debugging
+        wrerr(str(i) + ": ") 
+        #  print an exclamation point if the value is above this dot, otherwise a period
         for d in range(dots):
             if d < norm * dots:
                 wrerr("!")
@@ -47,16 +53,10 @@ def readJoystick(js):
 
         wrerr("\t")
 
-    # print a -- if the button is not pressed, print the button number if it is pressed
-    for i, button in enumerate([js.get_button(i) for i in range(js.get_numbuttons())]):
-        if button:
-            wrerr(str(i))
-        else:
-            wrerr("-" * len(str(i)))
         
     prerr("")
-
-
+    #pygame.event.clear()
+    return output
 
 
 # normal script entry
@@ -66,6 +66,7 @@ if __name__ == "__main__":
     global screen
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
+    ser = serial.Serial(0)
     
     # print error message if no joysticks were connected
     if pygame.joystick.get_count() < 1:
@@ -81,21 +82,37 @@ if __name__ == "__main__":
     # print an error message if no joystick was specified
     if len(sys.argv) < 2:
         pygame.quit()
-        prerr("Monitor a specific joystick with the command 'python %s <joystick number> 1>/dev/null'" % sys.argv[0])
+        prerr("You need to choose a specific joystick with the command 'python %s <joystick number> 1>out.log'" % sys.argv[0])
+        prerr("")
         exit(1)
 
+    joystickNum = int(sys.argv[1])
+
     # initialize the joystick that was specified on the command line
-    js = pygame.joystick.Joystick(int(sys.argv[1]))
+    js = pygame.joystick.Joystick(joystickNum)
     if not js.get_init():
         js.init()
         
+    n = 0 
     # loop and read input
     while True:
-        readJoystick(js)
+        values = readJoystick(js) # get array of axis values
+        letters = ["w", "s", "h", "y"] # labels we send to serial port that the arduino expect
+        # The arduinocamand will call for the label (letters) and the value of the speed(0 - 127)
+        # the speed is coded as a char
+        # example of arduinocommand: ::wJsOhUyP
 
-        # wait for a keypress, and exit if we get one
-        i, o, e = select.select( [sys.stdin], [], [], 0.01 )
-        if i:
-            pygame.quit()
-            break
+        # building the arduino command
+        myArduinoCommand = "::" # resetting the state of the ardunio
+
+        for i, v in enumerate(values): # going through the values index and its axis value
+            myArduinoCommand = myArduinoCommand + letters[i] # setting up the arduino state 
+            myArduinoCommand = myArduinoCommand + chr(int(v)) # setting up the arduino spead
+            # chr(int(v)) is going to convert v as integer with the equivalent value of it as a character
+
+        # arduino command is now complete
+
+        ser.write(myArduinoCommand) # send the command
+        prerr(myArduinoCommand + " " + str(ser.outWaiting())) 
+
         
