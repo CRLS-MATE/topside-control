@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     joystickNum = int(sys.argv[1])
 
-    # initialize the joystick that was specified on the command line
+    # initialize the joystick that was specified on the command line 
     js = pygame.joystick.Joystick(joystickNum)
     if not js.get_init():
         js.init()
