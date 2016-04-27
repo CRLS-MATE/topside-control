@@ -113,6 +113,8 @@ if __name__ == "__main__":
         # arduino command is now complete
 
         ser.write(myArduinoCommand) # send the command
-        prerr(myArduinoCommand + " " + str(ser.outWaiting())) 
+        prerr(myArduinoCommand + " " + str(ser.outWaiting()))
+        time.sleep(0.1) 
+
 
         
