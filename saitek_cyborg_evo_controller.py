@@ -46,7 +46,7 @@ def readJoystick(js):
         wrerr(str(i) + ": ") 
         #  print an exclamation point if the value is above this dot, otherwise a period
         for d in range(dots):
-            if d < norm * dots:
+            if d < (norm * dots)/127:
                 wrerr("!")
             else:
                 wrerr(".")
@@ -54,7 +54,7 @@ def readJoystick(js):
         wrerr("\t")
 
         
-    prerr("")
+    #prerr("")
     #pygame.event.clear()
     return output
 
@@ -63,10 +63,10 @@ def readJoystick(js):
 if __name__ == "__main__":
 
     # set up pygame, including a screen (even though we don't need it)
-    global screen
+    global Screen
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
-    ser = serial.Serial(0)
+    ser = serial.Serial(3)
     
     # print error message if no joysticks were connected
     if pygame.joystick.get_count() < 1:
