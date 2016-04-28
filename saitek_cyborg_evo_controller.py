@@ -39,6 +39,8 @@ def readJoystick(js):
 
     # cycle through all joystick axes
     for i, axis in enumerate([js.get_axis(i) for i in range(js.get_numaxes())]):
+        if(!js.get_button(0)):
+            axis = 0
         norm = (axis + 1.0) * (127/ 2.0) # normalize to the range 0-127
         output.append(norm)
 
