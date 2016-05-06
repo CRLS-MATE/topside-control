@@ -68,7 +68,7 @@ if __name__ == "__main__":
     global Screen
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
-    ser = serial.Serial(3)
+    ser = serial.Serial(4)
     
     # print error message if no joysticks were connected
     if pygame.joystick.get_count() < 1:
