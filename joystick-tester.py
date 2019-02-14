@@ -92,7 +92,7 @@ if __name__ == "__main__":
     # loop and read input
     while True:
         readJoystick(js)
-
+        time.sleep(1)
         if "darwin" == sys.platform:
             # wait for a keypress, and exit if we get one
             i, o, e = select.select( [sys.stdin], [], [], 0.01 )

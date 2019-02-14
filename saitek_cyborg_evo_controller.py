@@ -6,6 +6,10 @@ import time
 import select #not important
 import pygame
 import serial
+import requests
+
+# ip of rpi
+rovIP = "192.168.1.3"
 
 # this is the number of dots that will be used to display the output of an axis
 dots = 8
@@ -39,7 +43,7 @@ def readJoystick(js):
 
     # cycle through all joystick axes
     for i, axis in enumerate([js.get_axis(i) for i in range(js.get_numaxes())]):
-        if(not js.get_button(7)):
+        if((not js.get_button(7)) and not (js.get_button(6) and i != 2)):
             axis = 0
         norm = (axis + 1.0) * (127/ 2.0) # normalize to the range 0-127
         output.append(norm)
@@ -55,6 +59,9 @@ def readJoystick(js):
 
         wrerr("\t")
 
+    for j, button in enumerate([js.get_button(k) for k in range(js.get_numbuttons())]):
+        #output.append(button)
+        wrerr("Button " + str(j) + ": " + str(button))
         
     #prerr("")
     #pygame.event.clear()
@@ -67,8 +74,8 @@ if __name__ == "__main__":
     # set up pygame, including a screen (even though we don't need it)
     global Screen
     pygame.init()
-    screen = pygame.display.set_mode((640, 480))
-    ser = serial.Serial(2)
+    #screen = pygame.display.set_mode((640, 480))
+    #ser = serial.Serial(2)
     
     # print error message if no joysticks were connected
     if pygame.joystick.get_count() < 1:
@@ -103,19 +110,29 @@ if __name__ == "__main__":
         # The arduinocamand will call for the label (letters) and the value of the speed(0 - 127)
         # the speed is coded as a char
         # example of arduinocommand: ::wJsOhUyP
+        # y -> yaw (spinning in place)
+        # h -> height?
+        # s -> speed (forward)?
+        # w -> ?
 
         # building the arduino command
-        myArduinoCommand = "::" # resetting the state of the ardunio
+        myArduinoCommand = ""#"::" # resetting the state of the ardunio
 
         for i, v in enumerate(values): # going through the values index and its axis value
             myArduinoCommand = myArduinoCommand + letters[i] # setting up the arduino state 
-            myArduinoCommand = myArduinoCommand + chr(int(v)) # setting up the arduino spead
+            myArduinoCommand = myArduinoCommand + str(int(v))#chr(int(v)) # setting up the arduino spead
             # chr(int(v)) is going to convert v as integer with the equivalent value of it as a character
 
         # arduino command is now complete
 
-        ser.write(myArduinoCommand) # send the command
-        prerr(myArduinoCommand + " " + str(ser.outWaiting()) + " " + str(ser.inWaiting()))
+        #ser.write(myArduinoCommand) # send the command
+        prerr("about to send: " + myArduinoCommand)
+        try:
+            r = requests.get("http://" + rovIP + "/" + myArduinoCommand)
+            prerr("sent")
+            prerr(r.text)#myArduinoCommand + " " + str(ser.outWaiting()) + " " + str(ser.inWaiting()))
+        except Exception as e:
+            prerr(str(e))
         time.sleep(0.2) 
 
 
